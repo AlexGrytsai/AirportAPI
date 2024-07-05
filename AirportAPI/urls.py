@@ -18,19 +18,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from debug_toolbar.toolbar import debug_toolbar_urls
-from rest_framework_simplejwt.views import TokenObtainPairView, \
-    TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("__debug__/", include(debug_toolbar_urls)),
     path(
-        'api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'
+        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
     ),
     path(
-        'api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'
+        "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),
-    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/user/", include("user.urls"), namespace="user"),
     path("api/airport/", include("app.urls"), namespace="airport"),
 ]
