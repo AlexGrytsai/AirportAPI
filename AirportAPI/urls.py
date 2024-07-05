@@ -14,10 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
+import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
-from debug_toolbar.toolbar import debug_toolbar_urls
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -26,7 +25,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("__debug__/", include(debug_toolbar_urls)),
+    path("__debug__/", include(debug_toolbar.urls)),
     path(
         "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
     ),
@@ -34,6 +33,6 @@ urlpatterns = [
         "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("api/user/", include("user.urls"), namespace="user"),
-    path("api/airport/", include("app.urls"), namespace="airport"),
+    path("api/user/", include("user.urls", namespace="user")),
+    path("api/airport/", include("app.urls", namespace="app")),
 ]
