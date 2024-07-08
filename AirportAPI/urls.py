@@ -27,12 +27,18 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("__debug__/", include(debug_toolbar.urls)),
     path(
-        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
+        "api/v1/token/",
+        TokenObtainPairView.as_view(),
+        name="token_obtain_pair"
     ),
     path(
-        "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
+        "api/v1/token/refresh/",
+        TokenRefreshView.as_view(),
+        name="token_refresh"
     ),
-    path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("api/user/", include("user.urls", namespace="user")),
-    path("api/airport/", include("app.urls", namespace="app")),
+    path(
+        "api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"
+    ),
+    path("api/v1/user/", include("user.urls", namespace="user")),
+    path("api/v1/airport/", include("app.urls", namespace="app")),
 ]
