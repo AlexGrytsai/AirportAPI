@@ -129,7 +129,7 @@ SIMPLE_JWT = {
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "EUROPE/KIEV"
+TIME_ZONE = "Europe/Kiev"
 
 USE_I18N = True
 
