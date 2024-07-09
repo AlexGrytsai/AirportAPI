@@ -2,7 +2,7 @@ from django.db import models
 
 
 class AirplaneType(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=64)
 
     def __str__(self):
         return f"{self.name}"
@@ -10,8 +10,9 @@ class AirplaneType(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(
-        max_length=255,
+        max_length=128,
         unique=True,
+        help_text="Airplane name (like 'Boeing 747')"
     )
     code = models.CharField(
         max_length=8,
