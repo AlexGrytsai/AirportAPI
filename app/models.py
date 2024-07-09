@@ -3,18 +3,20 @@ from django.db import models
 
 class AirplaneType(models.Model):
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=8, unique=True)
 
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        return f"{self.name}"
 
 
 class Airplane(models.Model):
     name = models.CharField(
         max_length=255,
         unique=True,
-        null=False,
-        blank=False
+    )
+    code = models.CharField(
+        max_length=8,
+        unique=True,
+        help_text="Airplane code (like 'AB123')"
     )
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
@@ -25,4 +27,4 @@ class Airplane(models.Model):
         return self.rows * self.seats_in_row
 
     def __str__(self):
-        return f"Airplane {self.name} (total seats: {self.total_seats})"
+        return f"Airplane {self.name}|{self.code} (total seats: {self.total_seats})"
