@@ -380,4 +380,5 @@ pyrightconfig.json
 
 airplane_type_db_data.json
 
-.idea
+.idea!/airplane_db_data.json
+/airplane_db_data.json
