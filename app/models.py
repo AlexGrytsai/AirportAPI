@@ -27,4 +27,5 @@ class Airplane(models.Model):
         return self.rows * self.seats_in_row
 
     def __str__(self):
-        return f"Airplane {self.name}|{self.code} (total seats: {self.total_seats})"
+        return (f"Airplane {self.name}|{self.code} "
+                f"(total seats: {self.total_seats})")
