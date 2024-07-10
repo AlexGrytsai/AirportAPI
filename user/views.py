@@ -1,17 +1,27 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser
+)
 
 from user.models import User
+from user.permissions import IsNotAuthenticatedOrAdmin
 from user.serializers import UserSerializer
 
 
-class CreateUserView(generics.CreateAPIView):
+class UserView(generics.ListCreateAPIView):
     """
-    API view for creating a new user.
+    API view for creating a new user and listing all users (only staff).
     """
     serializer_class = UserSerializer
-    queryset = User.objects.none()
-    permission_classes = (AllowAny,)
+    queryset = User.objects.all()
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return (IsNotAuthenticatedOrAdmin(),)
+        elif self.request.method == "GET":
+            return (IsAdminUser(),)
+        return super().get_permissions()
 
 
 class ManageUserView(generics.RetrieveUpdateAPIView):
