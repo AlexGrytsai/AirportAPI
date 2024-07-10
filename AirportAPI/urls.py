@@ -17,6 +17,11 @@ Including another URLconf
 import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+    SpectacularAPIView
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -36,8 +41,19 @@ urlpatterns = [
         TokenRefreshView.as_view(),
         name="token_refresh"
     ),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"
+    ),
+    path(
+        "api/v1/doc/swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui"
+    ),
+    path(
+        "api/v1/doc/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc"
     ),
     path("api/v1/users/", include("user.urls", namespace="users")),
     path("api/v1/airport/", include("app.urls", namespace="app")),
