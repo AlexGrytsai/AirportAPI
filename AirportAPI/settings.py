@@ -39,9 +39,9 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "rest_framework",
     "rest_framework_simplejwt",
-    "drf_spectacular"
     "user",
-    "app"
+    "app",
+    "drf_spectacular"
 ]
 
 MIDDLEWARE = [
@@ -161,7 +161,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_SCHEMA_CLASS": ["drf_spectacular.openapi.AutoSchema",],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {"anon": "10/minute", "user": "30/minute"},
 }
 
