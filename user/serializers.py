@@ -37,7 +37,9 @@ class UserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ["id", "email", "password", "is_staff"]
+        fields = [
+            "id", "email", "password", "is_staff", "first_name", "last_name"
+        ]
         read_only_fields = ["is_staff", ]
         extra_kwargs = {"password": {
             "write_only": True,
@@ -45,7 +47,21 @@ class UserSerializer(serializers.ModelSerializer):
             "max_length": 64,
             "validators": [validate_password],
             "style": {"input_type": "password", "placeholder": "Password"}
-        }
+        },
+            "first_name": {
+                "required": False,
+                "style": {
+                    "input_type": "text",
+                    "placeholder": "First Name (optional field)"
+                }
+            },
+            "last_name": {
+                "required": False,
+                "style": {
+                    "input_type": "text",
+                    "placeholder": "Last Name (optional field)"
+                }
+            }
         }
 
     def create(self, validated_data: dict) -> User:
