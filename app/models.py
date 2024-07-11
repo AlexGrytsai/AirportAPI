@@ -43,7 +43,7 @@ class TitleCrew(models.TextChoices):
 class Crew(models.Model):
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
-    title = models.CharField(choices=TitleCrew.choices)
+    title = models.CharField(choices=TitleCrew.choices, max_length=64)
 
     @property
     def full_name(self):
