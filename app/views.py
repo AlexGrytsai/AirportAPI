@@ -1,6 +1,6 @@
 from typing import List
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, F
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
@@ -20,6 +20,7 @@ class AirplaneTypeViewSet(
     """
     serializer_class = AirplaneTypeSerializer
     queryset = AirplaneType.objects.all()
+    permission_classes = (IsAdminUser,)
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
@@ -27,6 +28,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
     A viewset for performing CRUD operations on airplanes.
     """
     queryset = Airplane.objects.all().select_related()
+    permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         """
@@ -45,6 +47,26 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
             return (IsAdminUser(),)
         return super().get_permissions()
+
+    def get_queryset(self) -> QuerySet:
+        """
+        Returns the appropriate queryset based on the query parameters.
+        """
+        airplane_type = self.request.query_params.get("type")
+        total_seats = self.request.query_params.get("total_seats")
+
+        queryset = super(AirplaneViewSet, self).get_queryset()
+
+        if airplane_type:
+            queryset = queryset.filter(airplane_type__icontains=airplane_type)
+
+        if total_seats:
+            total_seats = int(total_seats)
+            queryset = queryset.annotate(
+                total_seats_in_plane=F("rows") * F("seats_in_row")
+            ).filter(total_seats_in_plane__lte=total_seats)
+
+        return queryset
 
 
 class CrewViewSet(viewsets.ModelViewSet):
