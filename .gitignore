@@ -382,3 +382,5 @@ airplane_type_db_data.json
 
 .idea!/airplane_db_data.json
 /airplane_db_data.json
+/crew_db_data.json
+/.idea/dataSources.xml
