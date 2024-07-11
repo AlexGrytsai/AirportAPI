@@ -1,6 +1,9 @@
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiExample, extend_schema, \
+from drf_spectacular.utils import (
+    OpenApiExample,
+    extend_schema,
     extend_schema_view
+)
 from rest_framework import generics
 from rest_framework.permissions import (
     IsAuthenticated,
