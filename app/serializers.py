@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
-from app.models import AirplaneType, Airplane
+from app.models import AirplaneType, Airplane, Crew
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
     """
     Serializer for the AirplaneType model.
     """
+
     class Meta:
         model = AirplaneType
         fields = ("id", "name",)
@@ -16,6 +17,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
     """
     Default serializer for the Airplane model.
     """
+
     class Meta:
         model = Airplane
         fields = (
@@ -60,4 +62,48 @@ class AirplaneDetailSerializer(serializers.ModelSerializer):
             "seats_in_row",
             "airplane_type",
             "total_seats"
+        )
+
+
+class CrewSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Crew model.
+    """
+
+    class Meta:
+        model = Crew
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "title",
+        )
+
+
+class CrewListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing crew members.
+    """
+
+    class Meta:
+        model = Crew
+        fields = (
+            "id",
+            "full_name",
+            "title",
+        )
+
+
+class CrewDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed crew member information.
+    """
+
+    class Meta:
+        model = Crew
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+            "title",
         )

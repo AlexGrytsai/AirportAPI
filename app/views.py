@@ -1,9 +1,9 @@
 from rest_framework import mixins, viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import AirplaneType, Airplane
+from app.models import AirplaneType, Airplane, Crew
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
-    AirplaneListSerializer, AirplaneDetailSerializer
+    AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, CrewListSerializer, CrewDetailSerializer
 
 
 class AirplaneTypeViewSet(
@@ -41,3 +41,30 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
             return (IsAdminUser(),)
         return super().get_permissions()
+
+
+class CrewViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on crew members.
+    """
+    queryset = Crew.objects.all()
+
+    def get_permissions(self):
+        """
+        Returns the appropriate permissions based on the request method.
+        """
+        if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
+            return (IsAdminUser(),)
+        if self.request.method == "GET":
+            return (IsAuthenticated(),)
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
+        if self.action == "list":
+            return CrewListSerializer
+        if self.action == "retrieve":
+            return CrewDetailSerializer
+        return CrewSerializer
