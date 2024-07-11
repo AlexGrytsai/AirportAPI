@@ -11,14 +11,23 @@ class AirplaneTypeViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet
 ):
+    """
+    A viewset for creating and listing airplane types.
+    """
     serializer_class = AirplaneTypeSerializer
     queryset = AirplaneType.objects.all()
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on airplanes.
+    """
     queryset = Airplane.objects.all().select_related()
 
     def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
         if self.action == "list":
             return AirplaneListSerializer
         if self.action == "retrieve":
@@ -26,6 +35,9 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         return AirplaneSerializer
 
     def get_permissions(self):
+        """
+        Returns the appropriate permissions based on the request method.
+        """
         if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
             return (IsAdminUser(),)
         return super().get_permissions()

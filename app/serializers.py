@@ -4,12 +4,18 @@ from app.models import AirplaneType, Airplane
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the AirplaneType model.
+    """
     class Meta:
         model = AirplaneType
         fields = ("id", "name",)
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
+    """
+    Default serializer for the Airplane model.
+    """
     class Meta:
         model = Airplane
         fields = (
@@ -24,6 +30,9 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class AirplaneListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing airplanes.
+    """
     airplane_type = serializers.SlugRelatedField(
         slug_field="name", read_only=True
     )
@@ -36,6 +45,9 @@ class AirplaneListSerializer(serializers.ModelSerializer):
 
 
 class AirplaneDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed airplane information.
+    """
     airplane_type = AirplaneTypeSerializer(read_only=True)
 
     class Meta:
