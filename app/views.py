@@ -4,11 +4,11 @@ from django.db.models import QuerySet, F
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import AirplaneType, Airplane, Crew, Airport, Route
+from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer, RouteSerializer, RouteListSerializer
+    AirportListSerializer, AirportDetailSerializer, RouteSerializer, RouteListSerializer, FlightSerializer
 
 
 class AirplaneTypeViewSet(
@@ -181,3 +181,23 @@ class RouteViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "list":
             return RouteListSerializer
         return RouteSerializer
+
+
+class FlightViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on flights.
+    """
+    queryset = Flight.objects.all().select_related("route__source", "route__destination", "airplane").prefetch_related("crew")
+    serializer_class = FlightSerializer
+    permission_classes = (IsAdminUser,)
+
+
+    # def get_serializer_class(self):
+    #     """
+    #     Returns the appropriate serializer class based on the action.
+    #     """
+    #     if self.action == "list":
+    #         return FlightListSerializer
+    #     if self.action == "retrieve":
+    #         return FlightDetailSerializer
+    #     return FlightSerializer
