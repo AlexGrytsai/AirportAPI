@@ -8,7 +8,7 @@ from app.models import AirplaneType, Airplane, Crew, Airport, Route
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer, RouteSerializer
+    AirportListSerializer, AirportDetailSerializer, RouteSerializer, RouteListSerializer
 
 
 class AirplaneTypeViewSet(
@@ -166,10 +166,18 @@ class AirportViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class RouteViewSet(viewsets.ModelViewSet):
+class RouteViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    A viewset for performing CRUD operations on routes.
+    A viewset for performing Read-only operations on routes.
     """
-    queryset = Route.objects.all()
+    queryset = Route.objects.all().select_related("source", "destination")
     serializer_class = RouteSerializer
     permission_classes = (IsAuthenticated,)
+
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
+        if self.action == "list":
+            return RouteListSerializer
+        return RouteSerializer
