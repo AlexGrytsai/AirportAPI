@@ -124,3 +124,17 @@ class AirportSerializer(serializers.ModelSerializer):
             "city",
             "country",
         )
+
+
+class AirportListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing airports.
+    """
+
+    class Meta:
+        model = Airport
+        fields = (
+            "id",
+            "name",
+            "country",
+        )
