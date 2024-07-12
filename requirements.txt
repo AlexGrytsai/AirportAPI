@@ -3,7 +3,9 @@ argon2-cffi-bindings==21.2.0
 asgiref==3.8.1
 attrs==23.2.0
 black==24.4.2
+certifi==2024.7.4
 cffi==1.16.0
+charset-normalizer==3.3.2
 click==8.1.7
 colorama==0.4.6
 Django==5.0.6
@@ -11,6 +13,7 @@ django-debug-toolbar==4.4.3
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 drf-spectacular==0.27.2
+idna==3.7
 inflection==0.5.1
 jsonschema==4.23.0
 jsonschema-specifications==2023.12.1
@@ -23,7 +26,9 @@ pycparser==2.22
 PyJWT==2.8.0
 PyYAML==6.0.1
 referencing==0.35.1
+requests==2.32.3
 rpds-py==0.19.0
 sqlparse==0.5.0
 tzdata==2024.1
 uritemplate==4.1.1
+urllib3==2.2.2
