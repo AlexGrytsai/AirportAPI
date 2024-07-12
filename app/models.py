@@ -1,5 +1,6 @@
 import pycountry
 from django.db import models
+from django.utils import timezone
 from geopy.distance import distance
 from rest_framework.exceptions import ValidationError
 
@@ -31,7 +32,7 @@ class Airplane(models.Model):
         return self.rows * self.seats_in_row
 
     def __str__(self):
-        return (f"Airplane {self.name}|{self.code} "
+        return (f"{self.name} "
                 f"(total seats: {self.total_seats})")
 
 
@@ -141,3 +142,15 @@ class Flight(models.Model):
     def __str__(self):
         return (f"{self.route.source.name} -> {self.route.destination.name} "
                 f"({self.airplane.code}, {self.departure_time})")
+
+    def clean(self):
+        if self.departure_time < timezone.now():
+            raise ValidationError("Departure time cannot be in the past")
+
+        if self.arrival_time < self.departure_time:
+            raise ValidationError(
+                "Arrival time cannot be before departure time"
+            )
+
+        if self.arrival_time < timezone.now():
+            raise ValidationError("Arrival time cannot be in the past")
