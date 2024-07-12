@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from app.views import AirplaneTypeViewSet, AirplaneViewSet, CrewViewSet
+from app.views import AirplaneTypeViewSet, AirplaneViewSet, CrewViewSet, AirportViewSet
 
 router = routers.DefaultRouter()
 router.register(
@@ -9,6 +9,7 @@ router.register(
 )
 router.register("airplanes", AirplaneViewSet, basename="airplanes")
 router.register("crews", CrewViewSet, basename="crews")
+router.register("airports", AirportViewSet, basename="airports")
 
 urlpatterns = [path("", include(router.urls))]
 

@@ -4,10 +4,11 @@ from django.db.models import QuerySet, F
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import AirplaneType, Airplane, Crew
+from app.models import AirplaneType, Airplane, Crew, Airport
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
-    CrewListSerializer, CrewDetailSerializer
+    CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
+    AirportListSerializer
 
 
 class AirplaneTypeViewSet(
@@ -120,5 +121,44 @@ class CrewViewSet(viewsets.ModelViewSet):
         if crew_id:
             crew_ids = self._params_to_ints(crew_id)
             queryset = queryset.filter(id__in=crew_ids)
+
+        return queryset
+
+
+class AirportViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on airports.
+    """
+    queryset = Airport.objects.all()
+
+    def get_permissions(self):
+        """
+        Returns the appropriate permissions based on the request method.
+        """
+        if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
+            return (IsAdminUser(),)
+        return (IsAuthenticated(),)
+
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
+        if self.action == "list":
+            return AirportListSerializer
+        return AirportSerializer
+
+    def get_queryset(self):
+        """
+        Returns the appropriate queryset based on the query parameters.
+        """
+        city = self.request.query_params.get("city")
+        country = self.request.query_params.get("country")
+
+        queryset = super(AirportViewSet, self).get_queryset()
+
+        if city:
+            queryset = queryset.filter(city__icontains=city)
+        if country:
+            queryset = queryset.filter(country__icontains=country)
 
         return queryset
