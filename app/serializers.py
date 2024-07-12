@@ -1,3 +1,7 @@
+import os
+from typing import Any
+
+import requests
 from rest_framework import serializers
 
 from app.models import AirplaneType, Airplane, Crew, Airport
@@ -138,3 +142,46 @@ class AirportListSerializer(serializers.ModelSerializer):
             "name",
             "country",
         )
+
+
+class AirportDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed airport information.
+    """
+
+    @staticmethod
+    def actual_weather(city: str) -> dict[str, str | Any]:
+        url = (f"https://api.weatherapi.com/v1/current.json"
+               f"?key={os.getenv('WEATHER_KEY')}&q={city}")
+        response = requests.get(url)
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"Error {response.status_code}: {response.text}")
+        else:
+            response = response.json()
+            weather_data = {
+                "localtime": response["location"]["localtime"],
+                "temperature": f"{response['current']['temp_c']} Celsius "
+                               f"(feels like "
+                               f"{response['current']['feelslike_c']} "
+                               f"Celsius)",
+                "condition": response["current"]["condition"]["text"]
+            }
+            return weather_data
+
+    weather = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Airport
+        fields = (
+            "id",
+            "name",
+            "code",
+            "state",
+            "city",
+            "country",
+            "weather",
+        )
+
+    def get_weather(self, obj):
+        return self.actual_weather(obj.city)
