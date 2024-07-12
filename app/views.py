@@ -8,7 +8,7 @@ from app.models import AirplaneType, Airplane, Crew, Airport
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer
+    AirportListSerializer, AirportDetailSerializer
 
 
 class AirplaneTypeViewSet(
@@ -145,6 +145,8 @@ class AirportViewSet(viewsets.ModelViewSet):
         """
         if self.action == "list":
             return AirportListSerializer
+        if self.action == "retrieve":
+            return AirportDetailSerializer
         return AirportSerializer
 
     def get_queryset(self):
