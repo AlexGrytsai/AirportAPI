@@ -4,11 +4,11 @@ from django.db.models import QuerySet, F
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import AirplaneType, Airplane, Crew, Airport
+from app.models import AirplaneType, Airplane, Crew, Airport, Route
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer
+    AirportListSerializer, AirportDetailSerializer, RouteSerializer
 
 
 class AirplaneTypeViewSet(
@@ -164,3 +164,12 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(country__icontains=country)
 
         return queryset
+
+
+class RouteViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on routes.
+    """
+    queryset = Route.objects.all()
+    serializer_class = RouteSerializer
+    permission_classes = (IsAuthenticated,)
