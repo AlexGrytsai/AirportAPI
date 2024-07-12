@@ -1,5 +1,6 @@
 import pycountry
 from django.db import models
+from geopy.distance import distance
 from rest_framework.exceptions import ValidationError
 
 
@@ -67,6 +68,16 @@ class Airport(models.Model):
     city = models.CharField(max_length=64, null=True, blank=True)
     state = models.CharField(max_length=64, null=True, blank=True)
     country = models.CharField(max_length=64)
+    lat = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Longitude in degrees (format: 30.752)"
+    )
+    lon = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Latitude in degrees (format: 30.752)"
+    )
 
     def __str__(self):
         return f"{self.name} ({self.city} | {self.country})"
@@ -85,3 +96,26 @@ class Airport(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+
+class Route(models.Model):
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination"
+    )
+    distance = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.source} -> {self.destination} ({self.distance} km)"
+
+    def clean(self):
+        if self.source == self.destination:
+            raise ValidationError("Source and destination cannot be the same")
+
+        source_coordinates = (self.source.lat, self.source.lon)
+        destination_coordinates = (self.destination.lat, self.destination.lon)
+        self.destination = distance(
+            source_coordinates, destination_coordinates
+        ).km
