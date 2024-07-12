@@ -122,3 +122,22 @@ class Route(models.Model):
         ).km)
 
         return calculated_destination
+
+
+class Flight(models.Model):
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE, related_name="flights"
+    )
+    airplane = models.ForeignKey(
+        Airplane, on_delete=models.CASCADE, related_name="flights"
+    )
+    crew = models.ManyToManyField(Crew, related_name="flights")
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-departure_time"]
+
+    def __str__(self):
+        return (f"{self.route.source.name} -> {self.route.destination.name} "
+                f"({self.airplane.code}, {self.departure_time})")
