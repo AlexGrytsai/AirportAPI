@@ -1,4 +1,6 @@
+import pycountry
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 
 class AirplaneType(models.Model):
@@ -51,3 +53,35 @@ class Crew(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.title})"
+
+
+class Airport(models.Model):
+    code = models.CharField(
+        max_length=3,
+        unique=True,
+        help_text="Airport code (like 'JFK')"
+    )
+    name = models.CharField(
+        max_length=64, unique=True, help_text="Airport name"
+    )
+    city = models.CharField(max_length=64, null=True, blank=True)
+    state = models.CharField(max_length=64, null=True, blank=True)
+    country = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f"{self.name} ({self.city} | {self.country})"
+
+    def clean(self):
+        if not self.code.isalpha():
+            raise ValidationError("Code can only contain letters")
+        if self.code and not self.code.isupper():
+            self.code = self.code.upper()
+        if not self.country:
+            raise ValidationError("Country is required")
+
+        if pycountry.countries.get(name=self.country) is None:
+            raise ValidationError("Country not found")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
