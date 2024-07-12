@@ -4,7 +4,7 @@ from typing import Any
 import requests
 from rest_framework import serializers
 
-from app.models import AirplaneType, Airplane, Crew, Airport
+from app.models import AirplaneType, Airplane, Crew, Airport, Route
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -187,3 +187,17 @@ class AirportDetailSerializer(serializers.ModelSerializer):
 
     def get_weather(self, obj):
         return self.actual_weather(obj.city)
+
+
+class RouteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Route model.
+    """
+
+    class Meta:
+        model = Route
+        fields = (
+            "id",
+            "source",
+            "destination",
+        )
