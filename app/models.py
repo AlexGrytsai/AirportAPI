@@ -62,7 +62,7 @@ class Airport(models.Model):
         help_text="Airport code (like 'JFK')"
     )
     name = models.CharField(
-        max_length=64, unique=True, help_text="Airport name"
+        max_length=64, help_text="Airport name"
     )
     city = models.CharField(max_length=64, null=True, blank=True)
     state = models.CharField(max_length=64, null=True, blank=True)
