@@ -105,7 +105,6 @@ class Route(models.Model):
     destination = models.ForeignKey(
         Airport, on_delete=models.CASCADE, related_name="destination"
     )
-    distance = models.IntegerField()
 
     def __str__(self):
         return f"{self.source} -> {self.destination} ({self.distance} km)"
@@ -114,8 +113,12 @@ class Route(models.Model):
         if self.source == self.destination:
             raise ValidationError("Source and destination cannot be the same")
 
+    @property
+    def distance(self):
         source_coordinates = (self.source.lat, self.source.lon)
         destination_coordinates = (self.destination.lat, self.destination.lon)
-        self.destination = distance(
+        calculated_destination = int(distance(
             source_coordinates, destination_coordinates
-        ).km
+        ).km)
+
+        return calculated_destination
