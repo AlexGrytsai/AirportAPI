@@ -127,6 +127,8 @@ class AirportSerializer(serializers.ModelSerializer):
             "state",
             "city",
             "country",
+            "lat",
+            "lon",
         )
 
 
