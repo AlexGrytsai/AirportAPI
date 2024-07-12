@@ -201,3 +201,20 @@ class RouteSerializer(serializers.ModelSerializer):
             "source",
             "destination",
         )
+
+
+class RouteListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing routes.
+    """
+    source = AirportListSerializer(read_only=True)
+    destination = AirportListSerializer(read_only=True)
+
+    class Meta:
+        model = Route
+        fields = (
+            "id",
+            "source",
+            "destination",
+            "distance",
+        )
