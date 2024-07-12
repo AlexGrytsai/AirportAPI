@@ -4,7 +4,7 @@ from typing import Any
 import requests
 from rest_framework import serializers
 
-from app.models import AirplaneType, Airplane, Crew, Airport, Route
+from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -218,3 +218,55 @@ class RouteListSerializer(serializers.ModelSerializer):
             "destination",
             "distance",
         )
+
+
+class FlightSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Flight model.
+    """
+    route = RouteSerializer(read_only=False)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+        )
+
+    def create(self, validated_data):
+        route_data = validated_data.pop("route")
+        crew_data = validated_data.pop("crew")
+        route = Route.objects.create(**route_data)
+
+        flight = Flight.objects.create(route=route, **validated_data)
+        flight.crew.set(crew_data)
+
+        return flight
+
+    def update(self, instance, validated_data):
+        route_data = validated_data.pop("route")
+        crew_data = validated_data.pop("crew")
+        route = instance.route
+
+        instance.airplane = validated_data.get("airplane", instance.airplane)
+        instance.departure_time = validated_data.get(
+            "departure_time", instance.departure_time
+        )
+        instance.arrival_time = validated_data.get(
+            "arrival_time", instance.arrival_time
+        )
+        instance.save()
+
+        if crew_data is not None:
+            instance.crew.set(crew_data)
+
+        route = instance.route
+        route.source = route_data.get("source", route.source)
+        route.destination = route_data.get("destination", route.destination)
+        route.save()
+
+        return instance
