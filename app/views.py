@@ -8,7 +8,8 @@ from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight
 from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer, RouteSerializer, RouteListSerializer, FlightSerializer
+    AirportListSerializer, AirportDetailSerializer, RouteSerializer, \
+    RouteListSerializer, FlightSerializer, FlightListSerializer
 
 
 class AirplaneTypeViewSet(
@@ -187,17 +188,17 @@ class FlightViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on flights.
     """
-    queryset = Flight.objects.all().select_related("route__source", "route__destination", "airplane").prefetch_related("crew")
+    queryset = Flight.objects.all().select_related(
+        "route__source", "route__destination", "airplane"
+    ).prefetch_related("crew")
+
     serializer_class = FlightSerializer
     permission_classes = (IsAdminUser,)
 
-
-    # def get_serializer_class(self):
-    #     """
-    #     Returns the appropriate serializer class based on the action.
-    #     """
-    #     if self.action == "list":
-    #         return FlightListSerializer
-    #     if self.action == "retrieve":
-    #         return FlightDetailSerializer
-    #     return FlightSerializer
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
+        if self.action == "list":
+            return FlightListSerializer
+        return FlightSerializer

@@ -140,9 +140,9 @@ class AirportListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = (
-            "id",
             "name",
             "country",
+            "city",
         )
 
 
@@ -213,7 +213,6 @@ class RouteListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Route
         fields = (
-            "id",
             "source",
             "destination",
             "distance",
@@ -270,3 +269,21 @@ class FlightSerializer(serializers.ModelSerializer):
         route.save()
 
         return instance
+
+
+class FlightListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing flights.
+    """
+    route = RouteListSerializer(read_only=True)
+    airplane = AirplaneListSerializer(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+        )
