@@ -3,8 +3,10 @@ from typing import Any
 
 import requests
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight
+from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight, \
+    Ticket
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -249,7 +251,6 @@ class FlightSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         route_data = validated_data.pop("route")
         crew_data = validated_data.pop("crew")
-        route = instance.route
 
         instance.airplane = validated_data.get("airplane", instance.airplane)
         instance.departure_time = validated_data.get(
@@ -277,6 +278,7 @@ class FlightListSerializer(serializers.ModelSerializer):
     """
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
+    available_seats = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Flight
@@ -284,9 +286,16 @@ class FlightListSerializer(serializers.ModelSerializer):
             "id",
             "route",
             "airplane",
+            "available_seats",
             "departure_time",
             "arrival_time",
         )
+
+
+class TicketSeatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ("row", "seat")
 
 
 class FlightDetailSerializer(serializers.ModelSerializer):
@@ -296,6 +305,9 @@ class FlightDetailSerializer(serializers.ModelSerializer):
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
     crew = CrewListSerializer(many=True, read_only=True)
+    taken_seats = TicketSeatSerializer(
+        many=True, read_only=True, source="tickets"
+    )
 
     class Meta:
         model = Flight
@@ -303,7 +315,32 @@ class FlightDetailSerializer(serializers.ModelSerializer):
             "id",
             "route",
             "airplane",
+            "taken_seats",
             "crew",
             "departure_time",
             "arrival_time",
+        )
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Ticket model.
+    """
+
+    def validate(self, attrs: dict) -> dict:
+        data = super(TicketSerializer, self).validate(attrs)
+        Ticket.validate_ticket(
+            attrs["row"],
+            attrs["seat"],
+            attrs["flight"].airplane,
+            ValidationError
+        )
+        return data
+
+    class Meta:
+        model = Ticket
+        fields = (
+            "flight",
+            "row",
+            "seat",
         )
