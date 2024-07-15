@@ -9,7 +9,8 @@ from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
     AirportListSerializer, AirportDetailSerializer, RouteSerializer, \
-    RouteListSerializer, FlightSerializer, FlightListSerializer
+    RouteListSerializer, FlightSerializer, FlightListSerializer, \
+    FlightDetailSerializer
 
 
 class AirplaneTypeViewSet(
@@ -201,4 +202,6 @@ class FlightViewSet(viewsets.ModelViewSet):
         """
         if self.action == "list":
             return FlightListSerializer
+        if self.action == "retrieve":
+            return FlightDetailSerializer
         return FlightSerializer
