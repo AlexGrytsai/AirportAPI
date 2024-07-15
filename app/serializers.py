@@ -287,3 +287,23 @@ class FlightListSerializer(serializers.ModelSerializer):
             "departure_time",
             "arrival_time",
         )
+
+
+class FlightDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed flight information.
+    """
+    route = RouteListSerializer(read_only=True)
+    airplane = AirplaneListSerializer(read_only=True)
+    crew = CrewListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+        )
