@@ -1,6 +1,6 @@
 from typing import List
 
-from django.db.models import QuerySet, F
+from django.db.models import QuerySet, F, Count
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
@@ -191,7 +191,12 @@ class FlightViewSet(viewsets.ModelViewSet):
     """
     queryset = Flight.objects.all().select_related(
         "route__source", "route__destination", "airplane"
-    ).prefetch_related("crew")
+    ).prefetch_related("crew").annotate(
+        available_seats=(
+            F("airplane__rows") * F("airplane__seats_in_row")
+            - Count("tickets")
+        )
+    )
 
     serializer_class = FlightSerializer
     permission_classes = (IsAdminUser,)
