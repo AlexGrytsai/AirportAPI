@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight, \
-    Ticket
+    Ticket, Order
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -344,3 +344,42 @@ class FlightDetailSerializer(serializers.ModelSerializer):
             "departure_time",
             "arrival_time",
         )
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Order model.
+    """
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = (
+            "id",
+            "tickets",
+            "created_at",
+        )
+
+    def create(self, validated_data):
+        tickets_data = validated_data.pop("tickets")
+        order = Order.objects.create(**validated_data)
+
+        for ticket_data in tickets_data:
+            Ticket.objects.create(order=order, **ticket_data)
+
+        return order
+
+    def update(self, instance, validated_data):
+        tickets_data = validated_data.pop("tickets")
+
+        instance.created_at = validated_data.get(
+            "created_at", instance.created_at
+        )
+        instance.save()
+
+        if tickets_data is not None:
+            instance.tickets.delete()
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=instance, **ticket_data)
+
+        return instance
