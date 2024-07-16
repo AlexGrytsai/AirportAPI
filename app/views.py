@@ -1,29 +1,16 @@
 from typing import List
 
 from django.db.models import QuerySet, F, Count
-from rest_framework import mixins, viewsets
+from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight
-from app.serializers import AirplaneTypeSerializer, AirplaneSerializer, \
+from app.models import Airplane, Crew, Airport, Flight
+from app.serializers import AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer, RouteSerializer, \
-    RouteListSerializer, FlightSerializer, FlightListSerializer, \
+    AirportListSerializer, AirportDetailSerializer, FlightSerializer, \
+    FlightListSerializer, \
     FlightDetailSerializer
-
-
-class AirplaneTypeViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    """
-    A viewset for creating and listing airplane types.
-    """
-    serializer_class = AirplaneTypeSerializer
-    queryset = AirplaneType.objects.all()
-    permission_classes = (IsAdminUser,)
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
@@ -166,23 +153,6 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(country__icontains=country)
 
         return queryset
-
-
-class RouteViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    A viewset for performing Read-only operations on routes.
-    """
-    queryset = Route.objects.all().select_related("source", "destination")
-    serializer_class = RouteSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_serializer_class(self):
-        """
-        Returns the appropriate serializer class based on the action.
-        """
-        if self.action == "list":
-            return RouteListSerializer
-        return RouteSerializer
 
 
 class FlightViewSet(viewsets.ModelViewSet):
