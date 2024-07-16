@@ -4,13 +4,13 @@ from django.db.models import QuerySet, F, Count
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import Airplane, Crew, Airport, Flight
+from app.models import Airplane, Crew, Airport, Flight, Order
 from app.serializers import AirplaneSerializer, \
     AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
     CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
     AirportListSerializer, AirportDetailSerializer, FlightSerializer, \
     FlightListSerializer, \
-    FlightDetailSerializer
+    FlightDetailSerializer, OrderSerializer
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
@@ -183,5 +183,21 @@ class FlightViewSet(viewsets.ModelViewSet):
         Returns the appropriate permissions based on the request method.
         """
         if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
+            return (IsAdminUser(),)
+        return (IsAuthenticated(),)
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    """
+    A viewset for performing CRUD operations on orders.
+    """
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    def get_permissions(self):
+        """
+        Returns the appropriate permissions based on the request method.
+        """
+        if self.request.method in ("PUT", "PATCH", "DELETE"):
             return (IsAdminUser(),)
         return (IsAuthenticated(),)
