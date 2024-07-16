@@ -47,9 +47,7 @@ class AirplaneListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Airplane
-        fields = (
-            "id", "name", "airplane_type", "total_seats"
-        )
+        fields = ("id", "name", "airplane_type")
 
 
 class AirplaneDetailSerializer(serializers.ModelSerializer):
@@ -298,30 +296,6 @@ class TicketSeatSerializer(serializers.ModelSerializer):
         fields = ("row", "seat")
 
 
-class FlightDetailSerializer(serializers.ModelSerializer):
-    """
-    Serializer for retrieving detailed flight information.
-    """
-    route = RouteListSerializer(read_only=True)
-    airplane = AirplaneListSerializer(read_only=True)
-    crew = CrewListSerializer(many=True, read_only=True)
-    taken_seats = TicketSeatSerializer(
-        many=True, read_only=True, source="tickets"
-    )
-
-    class Meta:
-        model = Flight
-        fields = (
-            "id",
-            "route",
-            "airplane",
-            "taken_seats",
-            "crew",
-            "departure_time",
-            "arrival_time",
-        )
-
-
 class TicketSerializer(serializers.ModelSerializer):
     """
     Serializer for the Ticket model.
@@ -343,4 +317,30 @@ class TicketSerializer(serializers.ModelSerializer):
             "flight",
             "row",
             "seat",
+        )
+
+
+class FlightDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed flight information.
+    """
+    route = RouteListSerializer(read_only=True)
+    airplane = AirplaneListSerializer(read_only=True)
+    crew = CrewListSerializer(many=True, read_only=True)
+    taken_seats = TicketSeatSerializer(
+        many=True, read_only=True, source="tickets"
+    )
+    available_seats = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "available_seats",
+            "taken_seats",
+            "crew",
+            "departure_time",
+            "arrival_time",
         )
