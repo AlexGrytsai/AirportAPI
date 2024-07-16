@@ -190,16 +190,13 @@ class FlightViewSet(viewsets.ModelViewSet):
     A viewset for performing CRUD operations on flights.
     """
     queryset = Flight.objects.all().select_related(
-        "route__source", "route__destination", "airplane"
+        "route__source", "route__destination", "airplane__airplane_type"
     ).prefetch_related("crew").annotate(
         available_seats=(
             F("airplane__rows") * F("airplane__seats_in_row")
             - Count("tickets")
         )
     )
-
-    serializer_class = FlightSerializer
-    permission_classes = (IsAdminUser,)
 
     def get_serializer_class(self):
         """
@@ -210,3 +207,11 @@ class FlightViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return FlightDetailSerializer
         return FlightSerializer
+
+    def get_permissions(self):
+        """
+        Returns the appropriate permissions based on the request method.
+        """
+        if self.request.method in ("PUT", "PATCH", "DELETE", "POST"):
+            return (IsAdminUser(),)
+        return (IsAuthenticated(),)
