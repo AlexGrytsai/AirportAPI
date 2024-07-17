@@ -111,7 +111,10 @@ class Route(models.Model):
     )
 
     def __str__(self):
-        return f"{self.source} -> {self.destination} ({self.distance} km)"
+        return (
+            f"{self.source.name} "
+            f"-> {self.destination.name} ({self.distance} km)"
+        )
 
     def clean(self):
         if self.source == self.destination:
