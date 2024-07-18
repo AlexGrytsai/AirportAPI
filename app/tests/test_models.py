@@ -10,7 +10,7 @@ from app.models import (
     Route,
     Flight,
     Order,
-    Ticket
+    Ticket,
 )
 from user.models import User
 
@@ -23,9 +23,7 @@ class AirplaneTypeModelTest(TestCase):
 
 class AirplaneModelTest(TestCase):
     def test_total_seats_calculation(self):
-        airplane = Airplane(
-            name="Test Airplane", code="ABC123", rows=5, seats_in_row=4
-        )
+        airplane = Airplane(name="Test Airplane", code="ABC123", rows=5, seats_in_row=4)
 
         self.assertEqual(airplane.total_seats, 20)
 
@@ -36,21 +34,17 @@ class AirplaneModelTest(TestCase):
             code="ABC123",
             rows=5,
             seats_in_row=4,
-            airplane_type=airplane_type
+            airplane_type=airplane_type,
         )
 
-        self.assertEqual(
-            str(airplane), "Test Airplane (total seats: 20)"
-        )
+        self.assertEqual(str(airplane), "Test Airplane (total seats: 20)")
 
 
 class CrewModelTest(TestCase):
 
     def setUp(self):
         self.crew = Crew.objects.create(
-            first_name="John",
-            last_name="Doe",
-            title="Captain"
+            first_name="John", last_name="Doe", title="Captain"
         )
 
     def test_create_crew_instance(self):
@@ -74,18 +68,14 @@ class AirportModelTestCase(TestCase):
             country="French Polynesia",
             city="Anaa",
             lat=-17.3595,
-            lon=-145.494
+            lon=-145.494,
         )
 
     def test_code_contains_only_letters(self):
-        self.assertTrue(
-            self.airport.code.isalpha(), "Code must contain only letters"
-        )
+        self.assertTrue(self.airport.code.isalpha(), "Code must contain only letters")
 
     def test_code_is_uppercase(self):
-        self.assertTrue(
-            self.airport.code.isupper(), "Code must be uppercase"
-        )
+        self.assertTrue(self.airport.code.isupper(), "Code must be uppercase")
 
     def test_country_required(self):
         self.airport.country = None
@@ -98,9 +88,7 @@ class AirportModelTestCase(TestCase):
             self.airport.full_clean()
 
     def test_str_method(self):
-        self.assertEqual(
-            str(self.airport), "Anaa Airport (Anaa | French Polynesia)"
-        )
+        self.assertEqual(str(self.airport), "Anaa Airport (Anaa | French Polynesia)")
 
 
 class RouteModelTest(TestCase):
@@ -111,7 +99,7 @@ class RouteModelTest(TestCase):
             country="French Polynesia",
             city="Anaa",
             lat=-17.3595,
-            lon=-145.494
+            lon=-145.494,
         )
         self.destination_airport = Airport.objects.create(
             code="AAL",
@@ -120,22 +108,19 @@ class RouteModelTest(TestCase):
             state="Nordjylland",
             country="Denmark",
             lat=57.0952,
-            lon=9.85606
+            lon=9.85606,
         )
         self.route = Route.objects.create(
-            source=self.source_airport,
-            destination=self.destination_airport
+            source=self.source_airport, destination=self.destination_airport
         )
 
     def test_route_str_method(self):
         self.assertEqual(
-            self.route.__str__(),
-            "Anaa Airport -> Aalborg Airport (15142 km)"
+            self.route.__str__(), "Anaa Airport -> Aalborg Airport (15142 km)"
         )
 
     def test_clean_method_same_source_and_destination(self):
-        route = Route(source=self.source_airport,
-                      destination=self.source_airport)
+        route = Route(source=self.source_airport, destination=self.source_airport)
         with self.assertRaises(ValidationError):
             route.clean()
 
@@ -151,7 +136,7 @@ class FlightTestCase(TestCase):
             country="French Polynesia",
             city="Anaa",
             lat=-17.3595,
-            lon=-145.494
+            lon=-145.494,
         )
         self.destination_airport = Airport.objects.create(
             code="AAL",
@@ -160,11 +145,10 @@ class FlightTestCase(TestCase):
             state="Nordjylland",
             country="Denmark",
             lat=57.0952,
-            lon=9.85606
+            lon=9.85606,
         )
         self.route = Route.objects.create(
-            source=self.source_airport,
-            destination=self.destination_airport
+            source=self.source_airport, destination=self.destination_airport
         )
         self.airplane_type = AirplaneType.objects.create(name="Test Type")
         self.airplane = Airplane.objects.create(
@@ -172,7 +156,7 @@ class FlightTestCase(TestCase):
             code="ABC123",
             rows=5,
             seats_in_row=4,
-            airplane_type=self.airplane_type
+            airplane_type=self.airplane_type,
         )
         self.capitain = Crew.objects.create(
             first_name="John",
@@ -186,15 +170,15 @@ class FlightTestCase(TestCase):
             route=self.route,
             airplane=self.airplane,
             departure_time=self.departure_time,
-            arrival_time=self.arrival_time
+            arrival_time=self.arrival_time,
         )
         self.flight.crew.set([self.capitain])
 
     def test_str_method(self):
         self.assertEqual(
             str(self.flight),
-            f"Anaa Airport -> Aalborg Airport (ABC123,"
-            f" {self.departure_time})")
+            f"Anaa Airport -> Aalborg Airport (ABC123," f" {self.departure_time})",
+        )
 
     def test_clean_method_departure_time_in_past(self):
         self.departure_time = timezone.now() - timezone.timedelta(days=1)
@@ -203,7 +187,8 @@ class FlightTestCase(TestCase):
         self.assertEqual(
             str(cm.exception),
             "[ErrorDetail(string='Departure time cannot be in the past',"
-            " code='invalid')]")
+            " code='invalid')]",
+        )
 
     def test_clean_method_arrival_time_before_departure_time(self):
         self.arrival_time = self.departure_time - timezone.timedelta(hours=1)
@@ -214,7 +199,7 @@ class FlightTestCase(TestCase):
             "["
             "ErrorDetail(string='Departure time cannot be in the past', "
             "code='invalid')"
-            "]"
+            "]",
         )
 
     def test_clean_method_arrival_time_in_past(self):
@@ -224,7 +209,7 @@ class FlightTestCase(TestCase):
         self.assertEqual(
             str(cm.exception),
             "[ErrorDetail(string='Departure time cannot be in the past', "
-            "code='invalid')]"
+            "code='invalid')]",
         )
 
 
@@ -240,8 +225,7 @@ class OrderTestCase(TestCase):
     def test_order_string_representation(self):
         self.assertEqual(
             str(self.order),
-            f"Order #{self.order.id} by {self.user} "
-            f"({self.order.created_at})"
+            f"Order #{self.order.id} by {self.user} " f"({self.order.created_at})",
         )
 
 
@@ -254,7 +238,7 @@ class TicketTestCase(TestCase):
             country="French Polynesia",
             city="Anaa",
             lat=-17.3595,
-            lon=-145.494
+            lon=-145.494,
         )
         self.destination_airport = Airport.objects.create(
             code="AAL",
@@ -263,11 +247,10 @@ class TicketTestCase(TestCase):
             state="Nordjylland",
             country="Denmark",
             lat=57.0952,
-            lon=9.85606
+            lon=9.85606,
         )
         self.route = Route.objects.create(
-            source=self.source_airport,
-            destination=self.destination_airport
+            source=self.source_airport, destination=self.destination_airport
         )
         self.airplane_type = AirplaneType.objects.create(name="Test Type")
         self.airplane = Airplane.objects.create(
@@ -275,7 +258,7 @@ class TicketTestCase(TestCase):
             code="ABC123",
             rows=5,
             seats_in_row=4,
-            airplane_type=self.airplane_type
+            airplane_type=self.airplane_type,
         )
         self.capitain = Crew.objects.create(
             first_name="John",
@@ -289,7 +272,7 @@ class TicketTestCase(TestCase):
             route=self.route,
             airplane=self.airplane,
             departure_time=self.departure_time,
-            arrival_time=self.arrival_time
+            arrival_time=self.arrival_time,
         )
         self.flight.crew.set([self.capitain])
         self.user = User.objects.create_user(
@@ -302,32 +285,26 @@ class TicketTestCase(TestCase):
 
     def test_validate_ticket_invalid_row(self):
         with self.assertRaises(ValidationError) as context:
-            Ticket.validate_ticket(
-                0, 1, self.airplane, ValidationError
-            )
+            Ticket.validate_ticket(0, 1, self.airplane, ValidationError)
         self.assertEqual(
             context.exception.args[0],
             {
-                "row":
-                    ErrorDetail(
-                        string="row number must be in available range: "
-                               "(1, rows): (1, 5)",
-                        code="invalid"
-                    )
-            }
+                "row": ErrorDetail(
+                    string="row number must be in available range: "
+                    "(1, rows): (1, 5)",
+                    code="invalid",
+                )
+            },
         )
 
     def test_validate_ticket_invalid_seat(self):
         with self.assertRaises(ValidationError) as context:
-            Ticket.validate_ticket(
-                1, 0, self.airplane, ValidationError
-            )
+            Ticket.validate_ticket(1, 0, self.airplane, ValidationError)
         self.assertEqual(
             context.exception.args[0],
             {
-                "seat":
-                    "seat number must be in available range: "
-                    "(1, seats_in_row): (1, 4)"
+                "seat": "seat number must be in available range: "
+                "(1, seats_in_row): (1, 4)"
             },
         )
 
@@ -351,10 +328,7 @@ class TicketTestCase(TestCase):
             ticket.clean()
         self.assertEqual(
             context.exception.args[0],
-            {
-                "row": "row number must be in available range: "
-                       "(1, rows): (1, 5)"
-            },
+            {"row": "row number must be in available range: " "(1, rows): (1, 5)"},
         )
 
     def test_save_valid(self):
@@ -377,8 +351,5 @@ class TicketTestCase(TestCase):
             ticket.save()
         self.assertEqual(
             context.exception.args[0],
-            {
-                "row": "row number must be in available range: "
-                       "(1, rows): (1, 5)"
-            },
+            {"row": "row number must be in available range: " "(1, rows): (1, 5)"},
         )

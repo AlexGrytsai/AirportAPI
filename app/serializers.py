@@ -5,8 +5,16 @@ import requests
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from app.models import AirplaneType, Airplane, Crew, Airport, Route, Flight, \
-    Ticket, Order
+from app.models import (
+    AirplaneType,
+    Airplane,
+    Crew,
+    Airport,
+    Route,
+    Flight,
+    Ticket,
+    Order,
+)
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -16,7 +24,10 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AirplaneType
-        fields = ("id", "name",)
+        fields = (
+            "id",
+            "name",
+        )
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
@@ -33,7 +44,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
             "rows",
             "seats_in_row",
             "airplane_type",
-            "total_seats"
+            "total_seats",
         )
 
 
@@ -41,9 +52,8 @@ class AirplaneListSerializer(serializers.ModelSerializer):
     """
     Serializer for listing airplanes.
     """
-    airplane_type = serializers.SlugRelatedField(
-        slug_field="name", read_only=True
-    )
+
+    airplane_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
 
     class Meta:
         model = Airplane
@@ -54,6 +64,7 @@ class AirplaneDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for retrieving detailed airplane information.
     """
+
     airplane_type = AirplaneTypeSerializer(read_only=True)
 
     class Meta:
@@ -65,7 +76,7 @@ class AirplaneDetailSerializer(serializers.ModelSerializer):
             "rows",
             "seats_in_row",
             "airplane_type",
-            "total_seats"
+            "total_seats",
         )
 
 
@@ -153,21 +164,22 @@ class AirportDetailSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def actual_weather(city: str) -> dict[str, str | Any]:
-        url = (f"https://api.weatherapi.com/v1/current.json"
-               f"?key={os.getenv('WEATHER_KEY')}&q={city}")
+        url = (
+            f"https://api.weatherapi.com/v1/current.json"
+            f"?key={os.getenv('WEATHER_KEY')}&q={city}"
+        )
         response = requests.get(url)
         if response.status_code != 200:
-            raise RuntimeError(
-                f"Error {response.status_code}: {response.text}")
+            raise RuntimeError(f"Error {response.status_code}: {response.text}")
         else:
             response = response.json()
             weather_data = {
                 "localtime": response["location"]["localtime"],
                 "temperature": f"{response['current']['temp_c']} Celsius "
-                               f"(feels like "
-                               f"{response['current']['feelslike_c']} "
-                               f"Celsius)",
-                "condition": response["current"]["condition"]["text"]
+                f"(feels like "
+                f"{response['current']['feelslike_c']} "
+                f"Celsius)",
+                "condition": response["current"]["condition"]["text"],
             }
             return weather_data
 
@@ -207,6 +219,7 @@ class RouteListSerializer(serializers.ModelSerializer):
     """
     Serializer for listing routes.
     """
+
     source = AirportListSerializer(read_only=True)
     destination = AirportListSerializer(read_only=True)
 
@@ -223,6 +236,7 @@ class FlightSerializer(serializers.ModelSerializer):
     """
     Serializer for the Flight model.
     """
+
     route = RouteSerializer(read_only=False)
 
     class Meta:
@@ -274,6 +288,7 @@ class FlightListSerializer(serializers.ModelSerializer):
     """
     Serializer for listing flights.
     """
+
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
     available_seats = serializers.IntegerField(read_only=True)
@@ -304,10 +319,7 @@ class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs: dict) -> dict:
         data = super(TicketSerializer, self).validate(attrs)
         Ticket.validate_ticket(
-            attrs["row"],
-            attrs["seat"],
-            attrs["flight"].airplane,
-            ValidationError
+            attrs["row"], attrs["seat"], attrs["flight"].airplane, ValidationError
         )
         return data
 
@@ -324,12 +336,11 @@ class FlightDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for retrieving detailed flight information.
     """
+
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
     crew = CrewListSerializer(many=True, read_only=True)
-    taken_seats = TicketSeatSerializer(
-        many=True, read_only=True, source="tickets"
-    )
+    taken_seats = TicketSeatSerializer(many=True, read_only=True, source="tickets")
     available_seats = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -350,6 +361,7 @@ class OrderSerializer(serializers.ModelSerializer):
     """
     Serializer for the Order model.
     """
+
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
 
     class Meta:
@@ -372,9 +384,7 @@ class OrderSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         tickets_data = validated_data.pop("tickets")
 
-        instance.created_at = validated_data.get(
-            "created_at", instance.created_at
-        )
+        instance.created_at = validated_data.get("created_at", instance.created_at)
         instance.save()
 
         if tickets_data is not None:

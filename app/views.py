@@ -5,18 +5,28 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 from app.models import Airplane, Crew, Airport, Flight, Order
-from app.serializers import AirplaneSerializer, \
-    AirplaneListSerializer, AirplaneDetailSerializer, CrewSerializer, \
-    CrewListSerializer, CrewDetailSerializer, AirportSerializer, \
-    AirportListSerializer, AirportDetailSerializer, FlightSerializer, \
-    FlightListSerializer, \
-    FlightDetailSerializer, OrderSerializer
+from app.serializers import (
+    AirplaneSerializer,
+    AirplaneListSerializer,
+    AirplaneDetailSerializer,
+    CrewSerializer,
+    CrewListSerializer,
+    CrewDetailSerializer,
+    AirportSerializer,
+    AirportListSerializer,
+    AirportDetailSerializer,
+    FlightSerializer,
+    FlightListSerializer,
+    FlightDetailSerializer,
+    OrderSerializer,
+)
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on airplanes.
     """
+
     queryset = Airplane.objects.all().select_related()
     permission_classes = (IsAuthenticated,)
 
@@ -63,6 +73,7 @@ class CrewViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on crew members.
     """
+
     queryset = Crew.objects.all()
 
     def get_permissions(self):
@@ -118,6 +129,7 @@ class AirportViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on airports.
     """
+
     queryset = Airport.objects.all()
 
     def get_permissions(self):
@@ -159,12 +171,17 @@ class FlightViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on flights.
     """
-    queryset = Flight.objects.all().select_related(
-        "route__source", "route__destination", "airplane__airplane_type"
-    ).prefetch_related("crew").annotate(
-        available_seats=(
-            F("airplane__rows") * F("airplane__seats_in_row")
-            - Count("tickets")
+
+    queryset = (
+        Flight.objects.all()
+        .select_related(
+            "route__source", "route__destination", "airplane__airplane_type"
+        )
+        .prefetch_related("crew")
+        .annotate(
+            available_seats=(
+                F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
+            )
         )
     )
 
@@ -191,6 +208,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     """
     A viewset for performing CRUD operations on orders.
     """
+
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
