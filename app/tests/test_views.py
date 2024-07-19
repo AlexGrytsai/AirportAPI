@@ -1,18 +1,21 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
-from app.models import Airplane, AirplaneType, Crew
+from app.models import Airplane, AirplaneType, Crew, Airport
 from app.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
     AirplaneDetailSerializer,
     CrewListSerializer,
     CrewDetailSerializer,
-    CrewSerializer,
+    CrewSerializer, AirportListSerializer, AirportDetailSerializer,
+    AirportSerializer,
 )
-from app.views import AirplaneViewSet, CrewViewSet
+from app.views import AirplaneViewSet, CrewViewSet, AirportViewSet
 
 
 class AirplaneViewSetTests(TestCase):
@@ -277,3 +280,220 @@ class CrewViewSetTests(TestCase):
         self.assertEqual(crew.first_name, "John")
         self.assertEqual(crew.last_name, "Doe")
         self.assertEqual(crew.title, "Captain")
+
+
+class AirportViewSetTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="testpassword",
+            is_staff=True
+        )
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        self.airport1 = Airport.objects.create(
+            code="AAA",
+            name="Anaa Airport",
+            country="French Polynesia",
+            city="Anaa",
+            lat=-17.3595,
+            lon=-145.494,
+        )
+        self.airport2 = Airport.objects.create(
+            code="AAE",
+            name="El Mellah Airport",
+            country="Algeria",
+            city="El Tarf",
+            lat=36.8236,
+            lon=7.8103,
+        )
+
+    def test_access_to_view_not_authenticated(self):
+        self.client.logout()
+        response = self.client.get(reverse("app:airport-list"))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_serializer_class_action(self):
+        view = AirportViewSet()
+        view.action = "list"
+        self.assertEqual(view.get_serializer_class(), AirportListSerializer)
+        view.action = "retrieve"
+        self.assertEqual(view.get_serializer_class(), AirportDetailSerializer)
+        view.action = "create"
+        self.assertEqual(view.get_serializer_class(), AirportSerializer)
+        view.action = "update"
+        self.assertEqual(view.get_serializer_class(), AirportSerializer)
+        view.action = "partial_update"
+        self.assertEqual(view.get_serializer_class(), AirportSerializer)
+        view.action = "destroy"
+        self.assertEqual(view.get_serializer_class(), AirportSerializer)
+
+    @patch("app.serializers.AirportDetailSerializer.actual_weather")
+    def test_permissions(self, mock_actual_weather=None):
+        mock_actual_weather.return_value = {
+            "localtime": "2024-07-18 10:00",
+            "temperature": "25 Celsius (feels like 27 Celsius)",
+            "condition": "Sunny",
+        }
+
+        data = {
+            "code": "EEE",
+            "name": "Anaa Airport",
+            "country": "French Polynesia",
+            "city": "Anaa",
+            "lat": -17.3595,
+            "lon": -145.494
+        }
+
+        def try_different_action() -> None:
+            response = self.client.get(reverse("app:airport-list"))
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            response = self.client.get(
+                reverse(
+                    "app:airport-detail",
+                    kwargs={"pk": self.airport1.pk}
+                )
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            update_url = reverse(
+                "app:airport-detail", kwargs={"pk": self.airport2.pk}
+            )
+            response = self.client.put(update_url, data=data)
+            if self.user.is_staff:
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+            else:
+                self.assertEqual(
+                    response.status_code, status.HTTP_403_FORBIDDEN
+                )
+
+            if self.user.is_staff:
+                data["code"] = "CCC"
+            response = self.client.post(
+                reverse("app:airport-list"), data=data
+            )
+            if self.user.is_staff:
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            else:
+                self.assertEqual(
+                    response.status_code, status.HTTP_403_FORBIDDEN
+                )
+
+            response = self.client.delete(
+                reverse(
+                    "app:airport-detail",
+                    kwargs={"pk": self.airport1.pk}
+                )
+            )
+            if self.user.is_staff:
+                self.assertEqual(
+                    response.status_code, status.HTTP_204_NO_CONTENT
+                )
+            else:
+                self.assertEqual(
+                    response.status_code, status.HTTP_403_FORBIDDEN
+                )
+
+        self.user.is_staff = False
+        self.user.save()
+
+        try_different_action()
+
+        self.user.is_staff = True
+        self.user.save()
+
+        try_different_action()
+
+    @patch("app.serializers.AirportDetailSerializer.actual_weather")
+    def test_get_airport_by_id(self, mock_actual_weather=None):
+        mock_actual_weather.return_value = {
+            "localtime": "2024-07-18 10:00",
+            "temperature": "25 Celsius (feels like 27 Celsius)",
+            "condition": "Sunny",
+        }
+        response = self.client.get(
+            reverse(
+                "app:airport-detail", kwargs={"pk": self.airport1.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "Anaa Airport")
+
+    def test_get_airports_by_country(self):
+        response = self.client.get(
+            reverse("app:airport-list") + "?country=French Polynesia"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(
+            response.data["results"][0]["name"], "Anaa Airport"
+        )
+
+    def test_get_airports_by_city(self):
+        response = self.client.get(reverse("app:airport-list") + "?city=Anaa")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(
+            response.data["results"][0]["name"], "Anaa Airport"
+        )
+
+    def test_create_airport(self):
+        url = reverse("app:airport-list")
+        data = {
+            "code": "CCC",
+            "name": "Airport 3",
+            "country": "Yemen",
+            "city": "Sanaa",
+            "lat": 0,
+            "lon": 0
+        }
+        response = self.client.post(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Airport.objects.count(), 3)
+        airport = Airport.objects.get(pk=response.data["id"])
+        self.assertEqual(airport.code, "CCC")
+
+    def test_update_airport(self):
+        url = reverse(
+            "app:airport-detail", kwargs={"pk": self.airport1.pk}
+        )
+        data = {
+            "code": "DDD",
+            "name": "Airport 3",
+            "country": "Yemen",
+            "city": "Sanaa",
+            "lat": 0,
+            "lon": 0
+        }
+        response = self.client.put(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Airport.objects.count(), 2)
+        airport = Airport.objects.get(pk=self.airport1.pk)
+        self.assertEqual(airport.code, "DDD")
+
+    def test_delete_airport(self):
+        response = self.client.delete(
+            reverse("app:airport-detail", kwargs={"pk": self.airport1.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Airport.objects.count(), 1)
+
+    def test_patch_update_airport(self):
+        url = reverse(
+            "app:airport-detail", kwargs={"pk": self.airport1.pk}
+        )
+        data = {
+            "code": "XXX",
+        }
+        response = self.client.patch(
+            reverse(
+                "app:airport-detail", kwargs={"pk": self.airport1.pk}
+            ), data=data
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Airport.objects.count(), 2)
+        airport = Airport.objects.get(pk=self.airport1.pk)
+        self.assertEqual(airport.code, "XXX")
