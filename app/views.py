@@ -58,7 +58,9 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         queryset = super(AirplaneViewSet, self).get_queryset()
 
         if airplane_type:
-            queryset = queryset.filter(airplane_type__icontains=airplane_type)
+            queryset = queryset.filter(
+                airplane_type__name__icontains=airplane_type
+            )
 
         if total_seats:
             total_seats = int(total_seats)
