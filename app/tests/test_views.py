@@ -1,22 +1,27 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
-from app.models import Airplane, AirplaneType
+from app.models import Airplane, AirplaneType, Crew
 from app.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
     AirplaneDetailSerializer,
+    CrewListSerializer,
+    CrewDetailSerializer,
+    CrewSerializer,
 )
-from app.views import AirplaneViewSet
+from app.views import AirplaneViewSet, CrewViewSet
 
 
 class AirplaneViewSetTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="testuser@example.com", password="testpassword", is_staff=True
+            email="testuser@example.com",
+            password="testpassword",
+            is_staff=True
         )
         self.client.force_authenticate(user=self.user)
         self.airplane_type = AirplaneType.objects.create(name="Test Type")
@@ -77,12 +82,16 @@ class AirplaneViewSetTests(TestCase):
         self.assertEqual(response.data, serializer.data)
 
     def test_filter_airplanes_by_type(self):
-        response = self.client.get(reverse("app:airplane-list") + "?type=Test Type")
+        response = self.client.get(
+            reverse("app:airplane-list") + "?type=Test Type"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 2)
 
     def test_filter_airplanes_by_total_seats(self):
-        response = self.client.get(reverse("app:airplane-list") + "?total_seats=10")
+        response = self.client.get(
+            reverse("app:airplane-list") + "?total_seats=10"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 1)
 
@@ -101,7 +110,9 @@ class AirplaneViewSetTests(TestCase):
 
         airplane = self.airplanes[0]
         response = self.client.put(
-            reverse("app:airplane-detail", kwargs={"pk": airplane.pk}), data
+            reverse(
+                "app:airplane-detail", kwargs={"pk": airplane.pk}
+            ), data
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -162,3 +173,107 @@ class AirplaneViewSetTests(TestCase):
             reverse("app:airplane-detail", kwargs={"pk": airplane.pk})
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class CrewViewSetTests(TestCase):
+    def setUp(self):
+        self.view = CrewViewSet.as_view({"get": "list", "post": "create"})
+        self.client = APIClient()
+
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="testpassword",
+            is_staff=True
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.crew_data = {
+            "first_name": "John", "last_name": "Doe", "title": "Captain"
+        }
+        self.crew = Crew.objects.create(**self.crew_data)
+
+    def test_access_to_view_not_authenticated(self):
+        self.client.logout()
+        response = self.client.get(reverse("app:crew-list"))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_access_to_view_authenticated(self):
+        response = self.client.get(reverse("app:crew-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_serializer_class_action(self):
+        view = CrewViewSet()
+        view.action = "list"
+        self.assertEqual(view.get_serializer_class(), CrewListSerializer)
+        view.action = "retrieve"
+        self.assertEqual(view.get_serializer_class(), CrewDetailSerializer)
+        view.action = "create"
+        self.assertEqual(view.get_serializer_class(), CrewSerializer)
+        view.action = "update"
+        self.assertEqual(view.get_serializer_class(), CrewSerializer)
+        view.action = "partial_update"
+        self.assertEqual(view.get_serializer_class(), CrewSerializer)
+        view.action = "destroy"
+        self.assertEqual(view.get_serializer_class(), CrewSerializer)
+
+    def test_permissions(self):
+        self.user.is_staff = False
+        self.user.save()
+
+        response = self.client.get(reverse("app:crew-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(
+            reverse("app:crew-list"), data=self.crew_data
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.delete(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.patch(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.put(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.user.is_staff = True
+
+        response = self.client.get(reverse("app:crew-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.post(
+            reverse("app:crew-list"), data=self.crew_data
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.delete(
+            reverse("app:crew-detail", kwargs={"pk": self.crew.pk})
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_create_crew_instance(self):
+        response = self.client.post(
+            reverse("app:crew-list"), data=self.crew_data
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        crew = Crew.objects.get(pk=response.data["id"])
+        self.assertEqual(crew.first_name, "John")
+        self.assertEqual(crew.last_name, "Doe")
+        self.assertEqual(crew.title, "Captain")
