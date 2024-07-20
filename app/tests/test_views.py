@@ -3,9 +3,11 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from rest_framework.test import APIClient, APIRequestFactory
+from django.utils import timezone
 from rest_framework import status
-from app.models import Airplane, AirplaneType, Crew, Airport
+from rest_framework.test import APIClient, APIRequestFactory
+
+from app.models import Airplane, AirplaneType, Crew, Airport, Route, Flight
 from app.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
@@ -13,9 +15,11 @@ from app.serializers import (
     CrewListSerializer,
     CrewDetailSerializer,
     CrewSerializer, AirportListSerializer, AirportDetailSerializer,
-    AirportSerializer,
+    AirportSerializer, FlightListSerializer, FlightDetailSerializer,
+    FlightSerializer,
 )
-from app.views import AirplaneViewSet, CrewViewSet, AirportViewSet
+from app.views import AirplaneViewSet, CrewViewSet, AirportViewSet, \
+    FlightViewSet
 
 
 class AirplaneViewSetTests(TestCase):
@@ -497,3 +501,207 @@ class AirportViewSetTests(TestCase):
         self.assertEqual(Airport.objects.count(), 2)
         airport = Airport.objects.get(pk=self.airport1.pk)
         self.assertEqual(airport.code, "XXX")
+
+
+class FlightViewSetTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="testuser@example.com",
+            password="testpassword",
+            is_staff=True
+        )
+        self.client.force_authenticate(user=self.user)
+
+        self.source_airport = Airport.objects.create(
+            code="AAA",
+            name="Anaa Airport",
+            country="French Polynesia",
+            city="Anaa",
+            lat=-17.3595,
+            lon=-145.494,
+        )
+        self.destination_airport = Airport.objects.create(
+            code="AAL",
+            name="Aalborg Airport",
+            city="Norresundby",
+            state="Nordjylland",
+            country="Denmark",
+            lat=57.0952,
+            lon=9.85606,
+        )
+        self.route = Route.objects.create(
+            source=self.source_airport, destination=self.destination_airport
+        )
+        self.airplane_type = AirplaneType.objects.create(name="Test Type")
+        self.airplane = Airplane.objects.create(
+            name="Test Airplane",
+            code="ABC123",
+            rows=5,
+            seats_in_row=4,
+            airplane_type=self.airplane_type,
+        )
+        self.capitain = Crew.objects.create(
+            first_name="John",
+            last_name="Doe",
+        )
+
+        self.departure_time = timezone.now()
+        self.arrival_time = self.departure_time + timezone.timedelta(hours=2)
+
+        self.flight = Flight.objects.create(
+            route=self.route,
+            airplane=self.airplane,
+            departure_time=self.departure_time,
+            arrival_time=self.arrival_time,
+        )
+        self.flight.crew.set([self.capitain])
+
+    def test_get_serializer_class_list(self):
+        view = FlightViewSet()
+
+        view.action = "list"
+        serializer_class = view.get_serializer_class()
+        self.assertEqual(serializer_class, FlightListSerializer)
+
+        view.action = "retrieve"
+        serializer_class = view.get_serializer_class()
+        self.assertEqual(serializer_class, FlightDetailSerializer)
+
+        view.action = "other_action"
+        serializer_class = view.get_serializer_class()
+        self.assertEqual(serializer_class, FlightSerializer)
+
+    def test_get_permissions_not_authorized(self):
+        self.client.logout()
+        response = self.client.get(reverse("app:flight-list"))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.client.get(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.client.delete(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        response = self.client.put(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.data_flight = {
+            "route": self.flight.route.pk,
+            "airplane": self.flight.airplane.pk,
+            "departure_time": self.flight.departure_time,
+            "arrival_time": self.flight.arrival_time,
+        }
+        response = self.client.post(
+            reverse("app:flight-list"), data=self.data_flight
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_permissions_not_staff(self):
+        self.user.is_staff = False
+        self.user.save()
+
+        response = self.client.get(reverse("app:flight-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.delete(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.put(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.data_flight = {
+            "route": self.flight.route.pk,
+            "airplane": self.flight.airplane.pk,
+            "departure_time": self.flight.departure_time,
+            "arrival_time": self.flight.arrival_time
+        }
+        response = self.client.post(
+            reverse("app:flight-list"), data=self.data_flight
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        response = self.client.patch(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_action_for_staff(self):
+        response = self.client.get(reverse("app:flight-list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        arrival_time = self.flight.arrival_time + timezone.timedelta(hours=1)
+        data = {
+            "airplane": self.airplane.pk,
+            "route": {
+                "source": self.source_airport.pk,
+                "destination": self.destination_airport.pk
+            },
+            "crew": [self.capitain.pk],
+            "departure_time": self.departure_time.isoformat(),
+            "arrival_time": arrival_time.isoformat()
+        }
+        response = self.client.put(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            ), data=data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.delete(
+            reverse(
+                "app:flight-detail",
+                kwargs={"pk": self.flight.pk}
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.post(
+            reverse("app:flight-list"), data=data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
