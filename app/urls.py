@@ -10,11 +10,11 @@ from app.views import (
 )
 
 router = routers.DefaultRouter()
-router.register("airplanes", AirplaneViewSet, basename="airplanes")
-router.register("crews", CrewViewSet, basename="crews")
-router.register("airports", AirportViewSet, basename="airports")
-router.register("flights", FlightViewSet, basename="flights")
-router.register("orders", OrderViewSet, basename="orders")
+router.register("airplanes", AirplaneViewSet)
+router.register("crews", CrewViewSet)
+router.register("airports", AirportViewSet)
+router.register("flights", FlightViewSet)
+router.register("orders", OrderViewSet)
 
 urlpatterns = [path("", include(router.urls))]
 
