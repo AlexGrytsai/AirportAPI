@@ -1,6 +1,7 @@
 from typing import List
 
 from django.db.models import QuerySet, F, Count
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_view, extend_schema, \
     OpenApiParameter
 from rest_framework import viewsets
@@ -20,7 +21,7 @@ from app.serializers import (
     FlightSerializer,
     FlightListSerializer,
     FlightDetailSerializer,
-    OrderSerializer,
+    OrderSerializer, OrderListSerializer, OrderDetailSerializer,
 )
 
 
@@ -45,6 +46,30 @@ from app.serializers import (
         ],
         description="Retrieve a list of airplanes, with optional filtering by "
                     "type and total number of seats.",
+        responses={
+            200: AirplaneListSerializer,
+            401: OpenApiTypes.OBJECT,
+            403: OpenApiTypes.OBJECT
+        },
+        # examples=[
+        #     OpenApiExample(
+        #         name="Successful response",
+        #         summary="A successful response example",
+        #         value={
+        #             {
+        #                 "id": 1,
+        #                 "name": "Airbus A320",
+        #                 "airplane_type": "Passenger"
+        #             },
+        #             {
+        #                 "id": 2,
+        #                 "name": "Boeing 737 MAX 8",
+        #                 "airplane_type": "Passenger"
+        #             },
+        #         }
+        #     )
+        # ]
+
     ),
     retrieve=extend_schema(
         tags=["Airplanes"],
@@ -424,8 +449,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     A viewset for performing CRUD operations on orders.
     """
 
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    queryset = Order.objects.all().prefetch_related(
+        "tickets__flight", "tickets__flight__route"
+    )
 
     def get_permissions(self):
         """
@@ -434,3 +461,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         if self.request.method in ("PUT", "PATCH", "DELETE"):
             return (IsAdminUser(),)
         return (IsAuthenticated(),)
+
+    def get_serializer_class(self):
+        """
+        Returns the appropriate serializer class based on the action.
+        """
+        if self.action == "list":
+            return OrderListSerializer
+        if self.action == "retrieve":
+            return OrderDetailSerializer
+        return OrderSerializer
