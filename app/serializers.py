@@ -53,7 +53,8 @@ class AirplaneListSerializer(serializers.ModelSerializer):
     Serializer for listing airplanes.
     """
 
-    airplane_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    airplane_type = serializers.SlugRelatedField(slug_field="name",
+                                                 read_only=True)
 
     class Meta:
         model = Airplane
@@ -178,9 +179,9 @@ class AirportDetailSerializer(serializers.ModelSerializer):
             weather_data = {
                 "localtime": response["location"]["localtime"],
                 "temperature": f"{response['current']['temp_c']} Celsius "
-                f"(feels like "
-                f"{response['current']['feelslike_c']} "
-                f"Celsius)",
+                               f"(feels like "
+                               f"{response['current']['feelslike_c']} "
+                               f"Celsius)",
                 "condition": response["current"]["condition"]["text"],
             }
             return weather_data
@@ -321,7 +322,8 @@ class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs: dict) -> dict:
         data = super(TicketSerializer, self).validate(attrs)
         Ticket.validate_ticket(
-            attrs["row"], attrs["seat"], attrs["flight"].airplane, ValidationError
+            attrs["row"], attrs["seat"], attrs["flight"].airplane,
+            ValidationError
         )
         return data
 
@@ -334,6 +336,45 @@ class TicketSerializer(serializers.ModelSerializer):
         )
 
 
+class TicketListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing tickets.
+    """
+    flight = FlightListSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = (
+            "flight",
+            "row",
+            "seat",
+        )
+
+
+class TicketOrderListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing tickets in an order.
+    """
+    flight = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Ticket
+        fields = (
+            "flight",
+            "row",
+            "seat",
+        )
+
+    def get_flight(self, obj: Ticket) -> str:
+        source_name = obj.flight.route.source.name
+        destination_name = obj.flight.route.destination.name
+        source_country = obj.flight.route.source.country
+        destination_country = obj.flight.route.destination.country
+
+        return (f"{source_name}({source_country}) -> "
+                f"{destination_name}({destination_country})")
+
+
 class FlightDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for retrieving detailed flight information.
@@ -342,7 +383,9 @@ class FlightDetailSerializer(serializers.ModelSerializer):
     route = RouteListSerializer(read_only=True)
     airplane = AirplaneListSerializer(read_only=True)
     crew = CrewListSerializer(many=True, read_only=True)
-    taken_seats = TicketSeatSerializer(many=True, read_only=True, source="tickets")
+    taken_seats = TicketSeatSerializer(
+        many=True, read_only=True, source="tickets"
+    )
     available_seats = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -376,6 +419,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tickets_data = validated_data.pop("tickets")
+        validated_data["user"] = self.context["request"].user
         order = Order.objects.create(**validated_data)
 
         for ticket_data in tickets_data:
@@ -386,7 +430,9 @@ class OrderSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         tickets_data = validated_data.pop("tickets")
 
-        instance.created_at = validated_data.get("created_at", instance.created_at)
+        instance.created_at = validated_data.get(
+            "created_at", instance.created_at
+        )
         instance.save()
 
         if tickets_data is not None:
@@ -395,3 +441,34 @@ class OrderSerializer(serializers.ModelSerializer):
                 Ticket.objects.create(order=instance, **ticket_data)
 
         return instance
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing orders.
+    """
+    tickets = TicketOrderListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = (
+            "id",
+            "created_at",
+            "tickets",
+        )
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializer for retrieving detailed order information.
+    """
+    tickets = TicketListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = (
+            "id",
+            "created_at",
+            "tickets",
+        )
+
