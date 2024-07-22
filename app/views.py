@@ -1,13 +1,26 @@
 from typing import List
 
-from django.db.models import QuerySet, F, Count
+from django.db.models import (
+    QuerySet,
+    F,
+    Count
+)
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_view, extend_schema, \
+from drf_spectacular.utils import (
+    extend_schema_view,
+    extend_schema,
     OpenApiParameter
+)
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
-from app.models import Airplane, Crew, Airport, Flight, Order
+from app.models import (
+    Airplane,
+    Crew,
+    Airport,
+    Flight,
+    Order
+)
 from app.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,

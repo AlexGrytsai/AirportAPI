@@ -2,8 +2,11 @@ import os
 from typing import Any
 
 import requests
+from dotenv import load_dotenv
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+
+load_dotenv()
 
 from app.models import (
     AirplaneType,
@@ -471,4 +474,3 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "tickets",
         )
-

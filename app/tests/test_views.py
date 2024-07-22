@@ -5,21 +5,36 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.test import APIClient, APIRequestFactory
+from rest_framework.test import APIClient
 
-from app.models import Airplane, AirplaneType, Crew, Airport, Route, Flight
+from app.models import (
+    Airplane,
+    AirplaneType,
+    Crew,
+    Airport,
+    Route,
+    Flight
+)
 from app.serializers import (
     AirplaneSerializer,
     AirplaneListSerializer,
     AirplaneDetailSerializer,
     CrewListSerializer,
     CrewDetailSerializer,
-    CrewSerializer, AirportListSerializer, AirportDetailSerializer,
-    AirportSerializer, FlightListSerializer, FlightDetailSerializer,
+    CrewSerializer,
+    AirportListSerializer,
+    AirportDetailSerializer,
+    AirportSerializer,
+    FlightListSerializer,
+    FlightDetailSerializer,
     FlightSerializer,
 )
-from app.views import AirplaneViewSet, CrewViewSet, AirportViewSet, \
+from app.views import (
+    AirplaneViewSet,
+    CrewViewSet,
+    AirportViewSet,
     FlightViewSet
+)
 
 
 class AirplaneViewSetTests(TestCase):
