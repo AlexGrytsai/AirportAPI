@@ -34,7 +34,11 @@ from app.serializers import (
     FlightSerializer,
     FlightListSerializer,
     FlightDetailSerializer,
-    OrderSerializer, OrderListSerializer, OrderDetailSerializer,
+    OrderSerializer,
+    OrderListSerializer,
+    OrderDetailSerializer,
+    OrderListForStaffSerializer,
+    OrderDetailForStaffSerializer,
 )
 
 
@@ -64,25 +68,6 @@ from app.serializers import (
             401: OpenApiTypes.OBJECT,
             403: OpenApiTypes.OBJECT
         },
-        # examples=[
-        #     OpenApiExample(
-        #         name="Successful response",
-        #         summary="A successful response example",
-        #         value={
-        #             {
-        #                 "id": 1,
-        #                 "name": "Airbus A320",
-        #                 "airplane_type": "Passenger"
-        #             },
-        #             {
-        #                 "id": 2,
-        #                 "name": "Boeing 737 MAX 8",
-        #                 "airplane_type": "Passenger"
-        #             },
-        #         }
-        #     )
-        # ]
-
     ),
     retrieve=extend_schema(
         tags=["Airplanes"],
@@ -464,7 +449,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     serializer_class = OrderSerializer
     queryset = Order.objects.all().prefetch_related(
-        "tickets__flight", "tickets__flight__route"
+        "tickets__flight__route__source",
+        "tickets__flight__route__destination"
     )
 
     def get_permissions(self):
@@ -479,8 +465,27 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         Returns the appropriate serializer class based on the action.
         """
+        user = self.request.user
+        if self.action == "list" and user.is_staff:
+            return OrderListForStaffSerializer
+        if self.action == "retrieve" and user.is_staff:
+            return OrderDetailForStaffSerializer
         if self.action == "list":
             return OrderListSerializer
         if self.action == "retrieve":
             return OrderDetailSerializer
         return OrderSerializer
+
+    def get_queryset(self):
+        """
+        Returns the appropriate queryset based on the query parameters.
+        """
+        queryset = super(OrderViewSet, self).get_queryset()
+        user = self.request.user
+
+        if not user.is_staff:
+            queryset = super(OrderViewSet, self).get_queryset().filter(
+                user=user
+            )
+
+        return queryset.select_related("user")
