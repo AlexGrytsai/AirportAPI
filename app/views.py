@@ -9,7 +9,9 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
-    OpenApiParameter
+    OpenApiParameter,
+    OpenApiExample,
+    PolymorphicProxySerializer
 )
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -417,30 +419,112 @@ class FlightViewSet(viewsets.ModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(
+        description="Retrieve a list of orders.",
         tags=["Orders"],
-        description="Retrieve a list of orders. Requires authentication.",
+        responses={
+            200: PolymorphicProxySerializer(
+                component_name="OrderDetail",
+                serializers={
+                    "staff": OrderListForStaffSerializer,
+                    "default": OrderListSerializer
+                },
+                resource_type_field_name="role",
+            ),
+        },
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                description="Filter by user ID (staff only)",
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name="order_id",
+                description="Filter by order ID",
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name="flight_id",
+                description="Filter by flight ID",
+                required=False,
+                type=int
+            ),
+        ],
+        examples=[
+            OpenApiExample(
+                name="For Staff",
+                description="Retrieve a list of orders for staff.",
+                value=[
+                    {
+                        "id": 4,
+                        "created_at": "2024-07-23T11:37:34.334234+03:00",
+                        "tickets": [
+                            {
+                                "flight": "Anaa Airport(French Polynesia) "
+                                          "-> El Mellah Airport(Algeria)",
+                                "row": 2,
+                                "seat": 2
+                            }
+                        ],
+                        "user": {
+                            "id": 1,
+                            "email": "test@test.com"
+                        }
+                    },
+                ],
+                response_only=True
+            ),
+            OpenApiExample(
+                name="For Customers",
+                description="Retrieve a list of orders for customers.",
+                value=[
+                    {
+                        "id": 4,
+                        "created_at": "2024-07-23T11:37:34.334234+03:00",
+                        "tickets": [
+                            {
+                                "flight": "Anaa Airport(French Polynesia) "
+                                          "-> El Mellah Airport(Algeria)",
+                                "row": 2,
+                                "seat": 2
+                            }
+                        ],
+                    }
+                ]
+            )
+        ]
     ),
     retrieve=extend_schema(
+        description="Retrieve an order by its ID.",
         tags=["Orders"],
-        description="Retrieve a single order by ID. Requires authentication.",
+        responses={
+            200: PolymorphicProxySerializer(
+                component_name="OrderDetail",
+                serializers={
+                    "staff": OrderDetailForStaffSerializer,
+                    "default": OrderDetailSerializer
+                },
+                resource_type_field_name="role",
+            ),
+        },
     ),
     create=extend_schema(
+        description="Create a new order.",
         tags=["Orders"],
-        description="Create a new order. Requires authentication.",
     ),
     update=extend_schema(
+        description="Update an order.",
         tags=["Orders"],
-        description="Update an existing order. Requires admin privileges.",
     ),
     partial_update=extend_schema(
+        description="Partially update an order.",
         tags=["Orders"],
-        description="Partially update an existing order. "
-                    "Requires admin privileges.",
     ),
     destroy=extend_schema(
+        description="Delete an order.",
         tags=["Orders"],
-        description="Delete an existing order. Requires admin privileges.",
-    ),
+    )
 )
 class OrderViewSet(viewsets.ModelViewSet):
     """
