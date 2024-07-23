@@ -1,0 +1,382 @@
+[
+  {
+    "model": "user.user",
+    "pk": 5,
+    "fields": {
+      "email": "johngold@example.com",
+      "first_name": "John",
+      "last_name": "Gold",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 6,
+    "fields": {
+      "email": "sarahbrown@example.com",
+      "first_name": "Sarah",
+      "last_name": "Brown",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 7,
+    "fields": {
+      "email": "alexsmith@example.com",
+      "first_name": "Alex",
+      "last_name": "Smith",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 8,
+    "fields": {
+      "email": "davidoliver@example.com",
+      "first_name": "David",
+      "last_name": "Oliver",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 9,
+    "fields": {
+      "email": "sophiaroberts@example.com",
+      "first_name": "Sophia",
+      "last_name": "Roberts",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "app.airplanetype",
+    "pk": 1,
+    "fields": {
+      "name": "Passenger"
+    }
+  },
+  {
+    "model": "app.airplanetype",
+    "pk": 2,
+    "fields": {
+      "name": "Freight"
+    }
+  },
+  {
+    "model": "app.airplanetype",
+    "pk": 3,
+    "fields": {
+      "name": "Military"
+    }
+  },
+  {
+    "model": "app.airplanetype",
+    "pk": 4,
+    "fields": {
+      "name": "Private"
+    }
+  },
+  {
+    "model": "app.airplanetype",
+    "pk": 5,
+    "fields": {
+      "name": "Sports"
+    }
+  },
+  {
+    "model": "app.airplane",
+    "pk": 1,
+    "fields": {
+      "name": "Airbus A320",
+      "code": "A320",
+      "rows": 31,
+      "seats_in_row": 6,
+      "airplane_type": 1
+    }
+  },
+  {
+    "model": "app.airplane",
+    "pk": 2,
+    "fields": {
+      "name": "Boeing 737 MAX 8",
+      "code": "B38M",
+      "rows": 31,
+      "seats_in_row": 6,
+      "airplane_type": 1
+    }
+  },
+  {
+    "model": "app.airplane",
+    "pk": 3,
+    "fields": {
+      "name": "Hawker 800",
+      "code": "H25B",
+      "rows": 5,
+      "seats_in_row": 3,
+      "airplane_type": 4
+    }
+  },
+  {
+    "model": "app.airplane",
+    "pk": 4,
+    "fields": {
+      "name": "ATR ATR-72",
+      "code": "AT72",
+      "rows": 12,
+      "seats_in_row": 4,
+      "airplane_type": 1
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 1,
+    "fields": {
+      "first_name": "Aaron",
+      "last_name": "Hill",
+      "title": "Co-Pilot"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 2,
+    "fields": {
+      "first_name": "Nina",
+      "last_name": "Hill",
+      "title": "Flight Attendant"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 3,
+    "fields": {
+      "first_name": "John",
+      "last_name": "Hill",
+      "title": "Captain"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 4,
+    "fields": {
+      "first_name": "Sarah",
+      "last_name": "Brown",
+      "title": "Flight Medic"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 5,
+    "fields": {
+      "first_name": "Sarah",
+      "last_name": "Olson",
+      "title": "Flight Attendant"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 6,
+    "fields": {
+      "first_name": "Brian",
+      "last_name": "Roberts",
+      "title": "Captain"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 7,
+    "fields": {
+      "first_name": "Nick",
+      "last_name": "Young",
+      "title": "Co-Pilot"
+    }
+  },
+  {
+    "model": "app.crew",
+    "pk": 8,
+    "fields": {
+      "first_name": "Claire",
+      "last_name": "Taylor",
+      "title": "Flight Attendan"
+    }
+  },
+  {
+    "model": "app.route",
+    "pk": 1,
+    "fields": {
+      "source": 1,
+      "destination": 2
+    }
+  },
+  {
+    "model": "app.route",
+    "pk": 2,
+    "fields": {
+      "source": 5,
+      "destination": 3
+    }
+  },
+  {
+    "model": "app.route",
+    "pk": 3,
+    "fields": {
+      "source": 2,
+      "destination": 4
+    }
+  },
+  {
+    "model": "app.route",
+    "pk": 4,
+    "fields": {
+      "source": 3,
+      "destination": 4
+    }
+  },
+  {
+    "model": "app.route",
+    "pk": 5,
+    "fields": {
+      "source": 4,
+      "destination": 5
+    }
+  },
+  {
+    "model": "app.flight",
+    "pk": 1,
+    "fields": {
+      "airplane": 1,
+      "departure_time": "2024-08-01T10:00:00Z",
+      "arrival_time": "2024-08-01T12:00:00Z",
+      "route": 1,
+      "crew": [1, 2, 3]
+    }
+  },
+  {
+    "model": "app.flight",
+    "pk": 2,
+    "fields": {
+      "airplane": 2,
+      "departure_time": "2024-01-01T13:00:00Z",
+      "arrival_time": "2024-01-01T15:00:00Z",
+      "route": 2,
+      "crew": [4, 5, 6]
+    }
+  },
+  {
+    "model": "app.flight",
+    "pk": 3,
+    "fields": {
+      "airplane": 3,
+      "departure_time": "2024-01-01T14:00:00Z",
+      "arrival_time": "2024-01-01T16:00:00Z",
+      "route": 3,
+      "crew": [7, 8]
+    }
+  },
+  {
+    "model": "app.flight",
+    "pk": 4,
+    "fields": {
+      "airplane": 4,
+      "departure_time": "2024-01-01T15:00:00Z",
+      "arrival_time": "2024-01-01T17:00:00Z",
+      "route": 4,
+      "crew": [1, 2, 3]
+    }
+  },
+  {
+    "model": "app.flight",
+    "pk": 5,
+    "fields": {
+      "airplane": 5,
+      "departure_time": "2024-01-01T16:00:00Z",
+      "arrival_time": "2024-01-01T18:00:00Z",
+      "route": 5,
+      "crew": [4, 5, 6]
+    }
+  },
+  {
+    "model": "app.order",
+    "pk": 1,
+    "fields": {
+      "created_at": "2024-07-22T12:00:00Z",
+      "user": 5
+    }
+  },
+  {
+    "model": "app.order",
+    "pk": 2,
+    "fields": {
+      "created_at": "2024-07-22T12:00:00Z",
+      "user": 6
+    }
+  },
+  {
+    "model": "app.order",
+    "pk": 3,
+    "fields": {
+      "created_at": "2024-07-22T12:00:00Z",
+      "user": 7
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 1,
+    "fields": {
+      "flight": 1,
+      "order": 1,
+      "row": 1,
+      "seat": 1
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 2,
+    "fields": {
+      "flight": 1,
+      "order": 1,
+      "row": 1,
+      "seat": 2
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 3,
+    "fields": {
+      "flight": 2,
+      "order": 2,
+      "row": 1,
+      "seat": 3
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 4,
+    "fields": {
+      "flight": 3,
+      "order": 3,
+      "row": 1,
+      "seat": 4
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 5,
+    "fields": {
+      "flight": 3,
+      "order": 3,
+      "row": 1,
+      "seat": 5
+    }
+  },
+  {
+    "model": "app.ticket",
+    "pk": 6,
+    "fields": {
+      "flight": 5,
+      "order": 3,
+      "row": 1,
+      "seat": 6
+    }
+  }
+]
