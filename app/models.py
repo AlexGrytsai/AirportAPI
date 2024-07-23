@@ -17,7 +17,9 @@ class AirplaneType(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(
-        max_length=128, unique=True, help_text="Airplane name (like 'Boeing 747')"
+        max_length=128,
+        unique=True,
+        help_text="Airplane name (like 'Boeing 747')"
     )
     code = models.CharField(
         max_length=8, unique=True, help_text="Airplane code (like 'AB123')"
@@ -64,10 +66,14 @@ class Airport(models.Model):
     state = models.CharField(max_length=64, null=True, blank=True)
     country = models.CharField(max_length=64)
     lat = models.FloatField(
-        null=True, blank=True, help_text="Longitude in degrees (format: 30.752)"
+        null=True,
+        blank=True,
+        help_text="Longitude in degrees (format: 30.752)"
     )
     lon = models.FloatField(
-        null=True, blank=True, help_text="Latitude in degrees (format: 30.752)"
+        null=True,
+        blank=True,
+        help_text="Latitude in degrees (format: 30.752)"
     )
 
     def __str__(self):
@@ -90,13 +96,16 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source"
+    )
     destination = models.ForeignKey(
         Airport, on_delete=models.CASCADE, related_name="destination"
     )
 
     def __str__(self):
-        return f"{self.source.name} " f"-> {self.destination.name} ({self.distance} km)"
+        return f"{self.source.name} " \
+               f"-> {self.destination.name} ({self.distance} km)"
 
     def clean(self):
         if self.source == self.destination:
@@ -114,7 +123,9 @@ class Route(models.Model):
 
 
 class Flight(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE, related_name="flights"
+    )
     airplane = models.ForeignKey(
         Airplane, on_delete=models.CASCADE, related_name="flights"
     )
@@ -136,7 +147,9 @@ class Flight(models.Model):
             raise ValidationError("Departure time cannot be in the past")
 
         if self.arrival_time < self.departure_time:
-            raise ValidationError("Arrival time cannot be before departure time")
+            raise ValidationError(
+                "Arrival time cannot be before departure time"
+            )
 
         if self.arrival_time < timezone.now():
             raise ValidationError("Arrival time cannot be in the past")
@@ -145,7 +158,9 @@ class Flight(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders"
     )
 
     def __str__(self):
