@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-load_dotenv()
-
 from app.models import (
     AirplaneType,
     Airplane,
@@ -18,6 +16,9 @@ from app.models import (
     Ticket,
     Order,
 )
+from user.models import User
+
+load_dotenv()
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -461,6 +462,29 @@ class OrderListSerializer(serializers.ModelSerializer):
         )
 
 
+class UserForOrderListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing orders for staff.
+    """
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "email",
+        )
+
+
+class OrderListForStaffSerializer(OrderListSerializer):
+    """
+    Serializer for listing orders for staff.
+    """
+    user = UserForOrderListSerializer(read_only=True)
+
+    class Meta(OrderListSerializer.Meta):
+        fields = OrderListSerializer.Meta.fields + ("user",)
+
+
 class OrderDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for retrieving detailed order information.
@@ -474,3 +498,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "tickets",
         )
+
+
+class OrderDetailForStaffSerializer(OrderDetailSerializer):
+    """
+    Serializer for retrieving detailed order information for staff.
+    """
+    user = UserForOrderListSerializer(read_only=True)
+
+    class Meta(OrderDetailSerializer.Meta):
+        fields = OrderDetailSerializer.Meta.fields + ("user",)
