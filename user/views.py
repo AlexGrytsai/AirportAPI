@@ -1,6 +1,4 @@
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
-    OpenApiExample,
     extend_schema,
     extend_schema_view
 )
@@ -20,37 +18,6 @@ from user.serializers import UserSerializer
         summary="Retrieve User List Information (only for staff users)",
         description="Retrieve User List Information (only for staff users)",
         tags=["User"],
-        responses={
-            200: UserSerializer,
-            401: OpenApiTypes.OBJECT,
-            403: OpenApiTypes.OBJECT
-        },
-        examples=[
-            OpenApiExample(
-                "Successful response",
-                summary="A successful response example",
-                value={
-                    "id": 1,
-                    "email": "user@example.com",
-                    "is_staff": False
-                }
-            ),
-            OpenApiExample(
-                "Unauthorized response",
-                summary="An unauthorized response example",
-                value={
-                    "detail": "Authentication credentials were not provided."
-                }
-            ),
-            OpenApiExample(
-                "Forbidden response",
-                summary="A forbidden response example",
-                value={
-                    "detail":
-                        "You do not have permission to perform this action."
-                }
-            )
-        ]
     ),
     post=extend_schema(
         summary="Create User",
@@ -58,28 +25,6 @@ from user.serializers import UserSerializer
                     "(only for staff users ur unauthenticated user).",
         tags=["User"],
         request=UserSerializer,
-        responses={
-            201: UserSerializer,
-            400: OpenApiTypes.OBJECT,
-        },
-        examples=[
-            OpenApiExample(
-                "Successful response",
-                summary="A successful response example",
-                value={
-                    "id": 2,
-                    "email": "new_user@example.com",
-                    "is_staff": False
-                }
-            ),
-            OpenApiExample(
-                "Bad request response",
-                summary="A bad request response example",
-                value={
-                    "email": ["This field must be unique."]
-                }
-            )
-        ]
     )
 )
 class UserView(generics.ListCreateAPIView):
@@ -102,100 +47,18 @@ class UserView(generics.ListCreateAPIView):
         summary="Retrieve User Information",
         description="Retrieve the authenticated user's information.",
         tags=["User"],
-        responses={
-            200: UserSerializer,
-            401: OpenApiTypes.OBJECT,
-        },
-        examples=[
-            OpenApiExample(
-                "Successful response",
-                summary="A successful response example",
-                value={
-                    "id": 1,
-                    "email": "user@example.com",
-                    "is_staff": False
-                }
-            ),
-            OpenApiExample(
-                "Unauthorized response",
-                summary="An unauthorized response example",
-                value={
-                    "detail": "Authentication credentials were not provided."
-                }
-            )
-        ]
     ),
     put=extend_schema(
         summary="Update User Information",
         description="Update the authenticated user's information.",
         tags=["User"],
         request=UserSerializer,
-        responses={
-            200: UserSerializer,
-            400: OpenApiTypes.OBJECT,
-            401: OpenApiTypes.OBJECT,
-        },
-        examples=[
-            OpenApiExample(
-                "Successful response",
-                summary="A successful response example",
-                value={
-                    "id": 1,
-                    "email": "updated_user@example.com",
-                    "is_staff": False
-                }
-            ),
-            OpenApiExample(
-                "Bad request response",
-                summary="A bad request response example",
-                value={
-                    "email": ["This field is required."]
-                }
-            ),
-            OpenApiExample(
-                "Unauthorized response",
-                summary="An unauthorized response example",
-                value={
-                    "detail": "Authentication credentials were not provided."
-                }
-            )
-        ]
     ),
     patch=extend_schema(
         summary="Partially Update User Information",
         description="Partially update the authenticated user's information.",
         tags=["User"],
         request=UserSerializer,
-        responses={
-            200: UserSerializer,
-            400: OpenApiTypes.OBJECT,
-            401: OpenApiTypes.OBJECT,
-        },
-        examples=[
-            OpenApiExample(
-                "Successful response",
-                summary="A successful response example",
-                value={
-                    "id": 1,
-                    "email": "partially_updated_user@example.com",
-                    "is_staff": False
-                }
-            ),
-            OpenApiExample(
-                "Bad request response",
-                summary="A bad request response example",
-                value={
-                    "email": ["This field is required."]
-                }
-            ),
-            OpenApiExample(
-                "Unauthorized response",
-                summary="An unauthorized response example",
-                value={
-                    "detail": "Authentication credentials were not provided."
-                }
-            )
-        ]
     )
 )
 class ManageUserView(generics.RetrieveUpdateAPIView):
