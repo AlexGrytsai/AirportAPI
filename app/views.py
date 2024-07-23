@@ -483,9 +483,21 @@ class OrderViewSet(viewsets.ModelViewSet):
         queryset = super(OrderViewSet, self).get_queryset()
         user = self.request.user
 
+        user_id = self.request.query_params.get("user_id")
+        order_id = self.request.query_params.get("order_id")
+        flight_id = self.request.query_params.get("flight_id")
+
         if not user.is_staff:
             queryset = super(OrderViewSet, self).get_queryset().filter(
                 user=user
             )
+        if user.is_staff:
+            queryset = queryset.select_related("user")
+        if order_id:
+            queryset = queryset.filter(id=order_id)
+        if flight_id:
+            queryset = queryset.filter(tickets__flight__id=flight_id)
+        if user_id and user.is_staff:
+            queryset = queryset.filter(user__id=user_id).select_related("user")
 
-        return queryset.select_related("user")
+        return queryset
