@@ -175,9 +175,10 @@ class AirportDetailSerializer(serializers.ModelSerializer):
         )
         response = requests.get(url)
         if response.status_code != 200:
-            raise RuntimeError(
-                f"Error {response.status_code}: {response.text}"
-            )
+            weather_data = {
+                "weather": "Unfortunately, current weather is not available"
+            }
+            return weather_data
         else:
             response = response.json()
             weather_data = {
